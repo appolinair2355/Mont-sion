@@ -6,40 +6,19 @@ import xlrd2
 import os
 import uuid
 from datetime import datetime
-import urllib.request
-import json
 import re
 
-# Configuration Flask
 app = Flask(__name__)
-app.secret_key = os.environ.get('SECRET_KEY', 'ecole-mont-sion-secret-key-2024')
+app.secret_key = os.environ.get('SECRET_KEY', 'ecole-mont-sion-secret-key')
 
-# Configuration Render
+# Configuration Render.com
 PORT = int(os.environ.get('PORT', 10000))
 DATABASE = 'database.yaml'
 UPLOAD_FOLDER = 'uploads'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
-# Configuration SMS
-SMS_SENDER = '+2290167924076'
-
-class SMSService:
-    def send_sms(self, to_number, message):
-        """Envoi SMS simplifié"""
-        try:
-            clean_number = re.sub(r'\D', '', str(to_number))
-            if len(clean_number) >= 8:
-                # Simulation SMS (à adapter avec votre endpoint)
-                print(f"SMS envoyé à {clean_number}: {message}")
-                return True
-        except Exception as e:
-            print(f"SMS Error: {e}")
-            return False
-
-sms_service = SMSService()
-
 def load_data():
-    """Charge la base de données"""
+    """Charge la base de données avec structure complète"""
     try:
         with open(DATABASE, 'r', encoding='utf-8') as file:
             return yaml.safe_load(file) or {'primaire': [], 'secondaire': []}
@@ -94,7 +73,7 @@ def students():
     return render_template('students.html', grouped=grouped)
 
 @app.route('/notes')
-def notes_page():
+def notes():
     data = load_data()
     students = data.get('primaire', []) + data.get('secondaire', [])
     matieres = ['Mathématiques', 'Français', 'Anglais', 'Histoire', 'Géographie', 'Sciences', 'SVT', 'Physique', 'Chimie']
@@ -113,9 +92,9 @@ def add_note():
                 student['notes'][matiere] = note
                 save_data(data)
                 flash('Note ajoutée!', 'success')
-                return redirect(url_for('notes_page'))
+                return redirect(url_for('notes'))
     
-    return redirect(url_for('notes_page'))
+    return redirect(url_for('notes'))
 
 @app.route('/export_excel')
 def export_excel():
@@ -124,7 +103,7 @@ def export_excel():
     workbook = xlsxwriter.Workbook(output, {'in_memory': True})
     
     ws = workbook.add_worksheet('Élèves')
-    headers = ['ID', 'Nom', 'Prénoms', 'Classe', 'Frais Total', 'Frais Restant']
+    headers = ['ID', 'Nom', 'Prénoms', 'Classe', 'Frais Total', 'Frais Restant', 'Téléphone']
     for col, header in enumerate(headers):
         ws.write(0, col, header)
     
@@ -137,6 +116,7 @@ def export_excel():
             ws.write(row, 3, student.get('classe', ''))
             ws.write(row, 4, student.get('frais_total', 0))
             ws.write(row, 5, student.get('frais_restant', 0))
+            ws.write(row, 6, student.get('parent_phone', ''))
             row += 1
     
     workbook.close()
@@ -147,42 +127,6 @@ def export_excel():
         download_name=f"export_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
     )
 
-@app.route('/import_excel', methods=['GET', 'POST'])
-def import_excel():
-    if request.method == 'POST':
-        file = request.files.get('file')
-        if file and file.filename.endswith('.xlsx'):
-            workbook = xlrd2.open_workbook(file_contents=file.read())
-            worksheet = workbook.sheet_by_index(0)
-            
-            data = load_data()
-            for row in range(1, worksheet.nrows):
-                try:
-                    values = worksheet.row_values(row)
-                    eleve = {
-                        'id': str(uuid.uuid4()),
-                        'nom': str(values[1]).upper(),
-                        'prenoms': str(values[2]).title(),
-                        'classe': str(values[3]),
-                        'frais_total': int(float(str(values[4]))),
-                        'frais_paye': 0,
-                        'frais_restant': int(float(str(values[4]))),
-                        'notes': {},
-                        'paiements': []
-                    }
-                    
-                    if str(values[1]).upper() in ['CI', 'CP', 'CE1', 'CE2', 'CM1', 'CM2']:
-                        data['primaire'].append(eleve)
-                    else:
-                        data['secondaire'].append(eleve)
-                except:
-                    continue
-            
-            save_data(data)
-            flash('Import réussi!', 'success')
-            return redirect(url_for('students'))
-    return render_template('import_excel.html')
-
 @app.route('/pay', methods=['POST'])
 def pay():
     if request.form.get('password') != 'kouame':
@@ -191,7 +135,6 @@ def pay():
     
     student_id = request.form.get('student_id')
     amount = int(request.form.get('amount', 0))
-    mode = request.form.get('mode', 'Espèce')
     
     data = load_data()
     for niveau in ['primaire', 'secondaire']:
@@ -201,20 +144,12 @@ def pay():
                 student['frais_paye'] += amount
                 student['frais_restant'] = new_restant
                 
-                # Ajouter paiement
                 student['paiements'].append({
                     'date': datetime.now().strftime('%d/%m/%Y'),
-                    'montant': amount,
-                    'mode': mode
+                    'montant': amount
                 })
                 
                 save_data(data)
-                
-                # SMS
-                if student.get('parent_phone'):
-                    message = f"Vous venez de payer {amount} FCFA. Restant: {new_restant} FCFA"
-                    sms_service.send_sms(student['parent_phone'], message)
-                
                 flash('Paiement enregistré!', 'success')
                 return redirect(url_for('scolarite'))
     
@@ -232,38 +167,6 @@ def edit_delete():
     students = data.get('primaire', []) + data.get('secondaire', [])
     return render_template('edit_delete.html', students=students)
 
-@app.route('/edit/<student_id>')
-def edit_student(student_id):
-    data = load_data()
-    student = None
-    for niveau in ['primaire', 'secondaire']:
-        for s in data.get(niveau, []):
-            if s.get('id') == student_id:
-                student = s
-                break
-    return render_template('edit.html', student=student) if student else redirect(url_for('edit_delete'))
-
-@app.route('/update/<student_id>', methods=['POST'])
-def update_student(student_id):
-    data = load_data()
-    for niveau in ['primaire', 'secondaire']:
-        for student in data.get(niveau, []):
-            if student.get('id') == student_id:
-                student['nom'] = request.form['nom'].upper()
-                student['prenoms'] = request.form['prenoms'].title()
-                student['classe'] = request.form['classe']
-                student['sexe'] = request.form['sexe']
-                student['date_naissance'] = request.form['date_naissance']
-                student['parent'] = request.form['parent'].title()
-                student['parent_phone'] = re.sub(r'\D', '', request.form['parent_phone'])
-                student['frais_total'] = int(request.form['frais_total'])
-                student['frais_restant'] = student['frais_total'] - student['frais_paye']
-                save_data(data)
-                flash('Mis à jour!', 'success')
-                return redirect(url_for('students'))
-    
-    return redirect(url_for('edit_delete'))
-
 @app.errorhandler(404)
 def not_found_error(error):
     return render_template('404.html'), 404
@@ -275,4 +178,4 @@ def internal_error(error):
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 10000))
     app.run(host='0.0.0.0', port=port, debug=False)
-                
+    
