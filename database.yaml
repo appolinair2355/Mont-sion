@@ -1,0 +1,51 @@
+# Structure de base de données complète
+primaire:
+  - id: "uuid1"
+    nom: "KOUAME"
+    prenoms: "Jean Claude"
+    sexe: "M"
+    classe: "CI"
+    date_naissance: "15/05/2018"
+    parent: "KOUAME Marie"
+    parent_phone: "0167924076"
+    frais_total: 50000
+    frais_paye: 25000
+    frais_restant: 25000
+    date_inscription: "01/09/2024"
+    notes:
+      Mathématiques: 18.0
+      Français: 15.5
+      Anglais: 16.0
+    paiements:
+      - date: "01/09/2024"
+        montant: 15000
+        mode: "Espèce"
+      - date: "15/10/2024"
+        montant: 10000
+        mode: "Mobile Money"
+
+secondaire:
+  - id: "uuid2"
+    nom: "YAO"
+    prenoms: "Aline"
+    sexe: "F"
+    classe: "5ème"
+    date_naissance: "12/09/2010"
+    parent: "YAO Paul"
+    parent_phone: "0123456789"
+    frais_total: 75000
+    frais_paye: 50000
+    frais_restant: 25000
+    date_inscription: "01/09/2024"
+    notes:
+      Mathématiques: 14.5
+      Français: 16.0
+      Sciences: 13.0
+    paiements:
+      - date: "01/09/2024"
+        montant: 30000
+        mode: "Espèce"
+      - date: "10/10/2024"
+        montant: 20000
+        mode: "Virement"
+        
