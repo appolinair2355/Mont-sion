@@ -354,13 +354,12 @@ def scolarite():
     students = data.get('primaire', []) + data.get('secondaire', [])
     return render_template('scolarite.html', students=students)
 
-@app.route('/notes')
-def notes():
+@app.route('/notes')  # Gardez cette route
+def notes_page():     # Changez le nom de la fonction
     data = load_data()
     students = data.get('primaire', []) + data.get('secondaire', [])
     matieres = ['Mathématiques', 'Français', 'Anglais', 'Histoire', 'Géographie', 'Sciences', 'SVT', 'Physique', 'Chimie']
-    return render_template('notes.html', students=students, matieres=matieres)
-
+    return render_template('notes.html', students=students, matieres=matieres
 @app.route('/edit_delete')
 def edit_delete():
     data = load_data()
