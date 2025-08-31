@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header text-center">
+                <h3><i class="fas fa-edit me-2"></i>Modifier les informations</h3>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('update_student', student_id=student.id) }}">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Nom <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" name="nom" 
+                                       value="{{ student.nom }}" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Prénoms <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" name="prenoms" 
+                                       value="{{ student.prenoms }}" required>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label class="form-label">Sexe <span class="text-danger">*</span></label>
+                                <select class="form-select" name="sexe" required>
+                                    <option value="M" {% if student.sexe == 'M' %}selected{% endif %}>Masculin</option>
+                                    <option value="F" {% if student.sexe == 'F' %}selected{% endif %}>Féminin</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label class="form-label">Classe <span class="text-danger">*</span></label>
+                                <select class="form-select" name="classe" required>
+                                    <option value="{{ student.classe }}" selected>{{ student.classe }}</option>
+                                    <optgroup label="Primaire">
+                                        <option value="CI">CI</option>
+                                        <option value="CP">CP</option>
+                                        <option value="CE1">CE1</option>
+                                        <option value="CE2">CE2</option>
+                                        <option value="CM1">CM1</option>
+                                        <option value="CM2">CM2</option>
+                                    </optgroup>
+                                    <optgroup label="Secondaire">
+                                        <option value="6ème">6ème</option>
+                                        <option value="5ème">5ème</option>
+                                        <option value="4ème">4ème</option>
+                                        <option value="3ème">3ème</option>
+                                        <option value="2nde">2nde</option>
+                                        <option value="1ère">1ère</option>
+                                        <option value="Tle">Terminale</option>
+                                    </optgroup>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label class="form-label">Date de naissance <span class="text-danger">*</span></label>
+                                <input type="date" class="form-control" name="date_naissance" 
+                                       value="{{ student.date_naissance }}" required>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Nom du parent/tuteur <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" name="parent" 
+                                       value="{{ student.parent }}" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Téléphone Parent/Tuteur <span class="text-danger">*</span></label>
+                                <input type="tel" class="form-control" name="parent_phone" 
+                                       pattern="[0-9]{8,10}" value="{{ student.parent_phone }}" required>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Frais de scolarité total (FCFA) <span class="text-danger">*</span></label>
+                        <input type="number" class="form-control" name="frais_total" 
+                               value="{{ student.frais_total }}" required>
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>Mettre à jour
+                        </button>
+                        <a href="{{ url_for('edit_delete') }}" class="btn btn-secondary">
+                            <i class="fas fa-times me-2"></i>Annuler
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+                                      
