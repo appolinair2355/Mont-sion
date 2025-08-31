@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10">
+        <div class="card">
+            <div class="card-header text-center">
+                <h3><i class="fas fa-user-plus me-2"></i>Inscription complète</h3>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Nom <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" name="nom" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Prénoms <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" name="prenoms" required>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label class="form-label">Sexe <span class="text-danger">*</span></label>
+                                <select class="form-select" name="sexe" required>
+                                    <option value="">Choisir...</option>
+                                    <option value="M">Masculin</option>
+                                    <option value="F">Féminin</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label class="form-label">Niveau <span class="text-danger">*</span></label>
+                                <select class="form-select" name="niveau" required>
+                                    <option value="">Choisir...</option>
+                                    <option value="primaire">Primaire</option>
+                                    <option value="secondaire">Secondaire</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label class="form-label">Classe <span class="text-danger">*</span></label>
+                                <select class="form-select" name="classe" required>
+                                    <option value="">Choisir...</option>
+                                    <optgroup label="Primaire">
+                                        <option value="CI">CI</option>
+                                        <option value="CP">CP</option>
+                                        <option value="CE1">CE1</option>
+                                        <option value="CE2">CE2</option>
+                                        <option value="CM1">CM1</option>
+                                        <option value="CM2">CM2</option>
+                                    </optgroup>
+                                    <optgroup label="Secondaire">
+                                        <option value="6ème">6ème</option>
+                                        <option value="5ème">5ème</option>
+                                        <option value="4ème">4ème</option>
+                                        <option value="3ème">3ème</option>
+                                        <option value="2nde">2nde</option>
+                                        <option value="1ère">1ère</option>
+                                        <option value="Tle">Terminale</option>
+                                    </optgroup>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Date de naissance <span class="text-danger">*</span></label>
+                                <input type="date" class="form-control" name="date_naissance" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Nom du parent/tuteur <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" name="parent" required>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Téléphone Parent/Tuteur <span class="text-danger">*</span></label>
+                                <input type="tel" class="form-control" name="parent_phone" 
+                                       pattern="[0-9]{8,10}" placeholder="0167924076" required>
+                                <div class="form-text">Format: 8-10 chiffres</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Frais de scolarité total (FCFA) <span class="text-danger">*</span></label>
+                                <input type="number" class="form-control" name="frais" min="0" required>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Nom de l'utilisateur <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" name="utilisateur" required>
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-save me-2"></i>Enregistrrer l'inscription
+                        </button>
+                        <a href="{{ url_for('students') }}" class="btn btn-secondary btn-lg">
+                            <i class="fas fa-times me-2"></i>Annuler
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+  
