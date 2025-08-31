@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2><i class="fas fa-star me-2"></i>Gestion des notes</h2>
+
+<div class="row">
+    <!-- Formulaire d'ajout -->
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-plus-circle me-2"></i>Ajouter une note</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('add_note') }}">
+                    <div class="mb-3">
+                        <label>Élève</label>
+                        <select class="form-select" name="student_id" required>
+                            <option value="">Choisir...</option>
+                            {% for eleve in students %}
+                                <option value="{{ eleve.id }}">
+                                    {{ eleve.nom }} {{ eleve.prenoms }} - {{ eleve.classe }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label>Matière</label>
+                        <select class="form-select" name="matiere" required>
+                            <option value="">Choisir...</option>
+                            {% for mat in matieres %}
+                                <option value="{{ mat }}">{{ mat }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label>Note (0-20)</label>
+                        <input type="number" class="form-control" name="note" min="0" max="20" step="0.5" required>
+                    </div>
+
+                    <button class="btn btn-primary w-100">
+                        <i class="fas fa-plus me-2"></i>Ajouter
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tableau des notes -->
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-list me-2"></i>Tableau des notes</h5>
+            </div>
+            <div class="card-body">
+                {% if not students %}
+                    <p class="text-center text-muted">Aucune note enregistrée.</p>
+                {% else %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Écoliers</th>
+                                <th>Prénoms</th>
+                                <th>Classe</th>
+                                <th>Matières</th>
+                                <th>Note</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for eleve in students %}
+                                {% for matiere, note in eleve.notes.items() %}
+                                <tr>
+                                    <td><strong>{{ eleve.nom }}</strong></td>
+                                    <td>{{ eleve.prenoms }}</td>
+                                    <td>{{ eleve.classe }}</td>
+                                    <td class="fw-bold text-primary">{{ matiere }}</td>
+                                    <td>
+                                        <span class="badge 
+                                            {% if note >= 14 %}bg-success
+                                            {% elif note >= 10 %}bg-warning text-dark
+                                            {% else %}bg-danger{% endif %}">
+                                            {{ note }}/20
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+  
