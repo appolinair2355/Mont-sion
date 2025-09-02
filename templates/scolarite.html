@@ -16,7 +16,7 @@
         <td>{{ s.frais_total }} FCFA</td>
         <td>{{ s.paiements|map(attribute='montant')|sum }} FCFA</td>
         <td class="fw-bold {% if (s.frais_total - s.paiements|map(attribute='montant')|sum) > 0 %}text-danger{% else %}text-success{% endif %}">
-          {{ s.frais_total - s.paiements|map(attribute='montang')|sum }} FCFA
+          {{ s.frais_total - s.paiements|map(attribute='montant')|sum }} FCFA
         </td>
         <td>
           <form method="POST" action="{{ url_for('scolarite') }}" class="d-flex gap-2">
@@ -32,3 +32,4 @@
   </table>
 </div>
 {% endblock %}
+              
