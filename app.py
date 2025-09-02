@@ -3,7 +3,7 @@ import yaml, io, xlsxwriter, xlrd2, os, uuid, re
 from datetime import datetime
 
 app = Flask(__name__)
-app.secret_key = os.environ.get('SECRET_KEY', 'ecole-mont-sion-final')
+app.secret_key = os.environ.get('SECRET_KEY', 'ecole-mont-sion-fix')
 PORT = int(os.environ.get('PORT', 10000))
 DATABASE = 'database.yaml'
 
@@ -17,7 +17,9 @@ def load_data():
             data = yaml.safe_load(f) or {'primaire': [], 'secondaire': []}
         for niv in ['primaire', 'secondaire']:
             for s in data.setdefault(niv, []):
-                s.setdefault('notes', {m: {t: None for t in TRIMESTRES} for m in MATIERES})
+                s.setdefault('notes', {})
+                for m in MATIERES:
+                    s['notes'].setdefault(m, {'Intero1': None, 'Intero2': None})
                 s.setdefault('paiements', [])
         return data
     except FileNotFoundError:
@@ -48,7 +50,7 @@ def register():
             'id': str(uuid.uuid4()),
             'nom': nom, 'prenoms': prenoms, 'classe': classe, 'sexe': sexe,
             'date_naissance': date_naissance, 'parent': parent, 'parent_phone': phone,
-            'frais_total': frais, 'notes': {m: {t: None for t in TRIMESTRES} for m in MATIERES},
+            'frais_total': frais, 'notes': {m: {'Intero1': None, 'Intero2': None} for m in MATIERES},
             'paiements': [], 'date_inscription': datetime.now().strftime('%d/%m/%Y')
         })
         save_data(data)
@@ -158,17 +160,15 @@ def import_excel():
                 'parent': str(row[headers.index('Parent')]).title(),
                 'parent_phone': re.sub(r'\D', '', str(row[headers.index('Téléphone')])),
                 'frais_total': int(row[headers.index('FraisTotal')]),
-                'notes': {m: {t: None for t in TRIMESTRES} for m in MATIERES},
+                'notes': {m: {'Intero1': None, 'Intero2': None} for m in MATIERES},
                 'paiements': []
             }
-
             # Notes
             for m in MATIERES:
                 for t in TRIMESTRES:
                     key = f'{m}{t}'
                     val = row[headers.index(key)] if key in headers else None
                     eleve['notes'][m][t] = float(val) if val else None
-
             # Paiements
             idx = 1
             while f'Paiement{idx}' in headers:
@@ -176,10 +176,8 @@ def import_excel():
                 if val:
                     eleve['paiements'].append({'date': '', 'montant': int(val), 'mode': 'Import'})
                 idx += 1
-
             niveau = 'primaire' if eleve['classe'] in {'CI','CP','CE1','CE2','CM1','CM2'} else 'secondaire'
             data.setdefault(niveau, []).append(eleve)
-
         save_data(data)
         flash('Import réussi', 'success')
         return redirect(url_for('students'))
@@ -230,5 +228,7 @@ def export_excel():
     output.seek(0)
     return send_file(io.BytesIO(output.getvalue()),
                      as_attachment=True,
-                     download_name=f"eleves_complet_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx")
-            
+                     download_name=f"eleves_complet_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx')
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=PORT, debug=False)
