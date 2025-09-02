@@ -18,7 +18,7 @@ def load_data():
         with open(DATABASE, 'r', encoding='utf-8') as f:
             data = yaml.safe_load(f) or {'primaire': [], 'secondaire': []}
         for niv in ['primaire', 'secondaire']:
-            for s in data.get(niv, []):
+            for s in data.setdefault(niv, []):
                 s.setdefault('notes', {m: {t: None for t in TRIMESTRES} for m in MATIERES})
                 s.setdefault('paiements', [])
         return data
@@ -29,7 +29,6 @@ def save_data(data):
     with open(DATABASE, 'w', encoding='utf-8') as f:
         yaml.dump(data, f, allow_unicode=True, default_flow_style=False)
 
-# ------------- ROUTES SANS ERREUR 404/500 ----------------
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -63,8 +62,8 @@ def register():
 def students():
     data = load_data()
     all_st = data['primaire'] + data['secondaire']
-    classes = sorted({s['classe'] for s in all_st})
-    grouped = {c: [s for s in all_st if s['classe'] == c] for c in classes}
+    classes = sorted({s.get('classe', 'Sans classe') for s in all_st})
+    grouped = {c: [s for s in all_st if s.get('classe') == c] for c in classes}
     return render_template('students.html', grouped=grouped)
 
 @app.route('/notes', methods=['GET', 'POST'])
@@ -89,6 +88,10 @@ def scolarite():
     if request.method == 'POST':
         sid = request.form['student_id']
         amount = int(request.form['amount'])
+        pwd = request.form.get('password')
+        if pwd != 'kouame':
+            flash('Mot de passe incorrect', 'error')
+            return redirect(url_for('scolarite'))
         for niv in ['primaire', 'secondaire']:
             for s in data[niv]:
                 if s['id'] == sid:
@@ -108,7 +111,7 @@ def export_excel():
     for m in MATIERES:
         for t in TRIMESTRES:
             headers.append(f'{m}{t}')
-    max_p = max([len(s['paiements']) for s in data['primaire'] + data['secondaire']], default=0)
+    max_p = max([len(s.get('paiements', [])) for s in data['primaire'] + data['secondaire']], default=0)
     for i in range(1, max_p + 1):
         headers.append(f'Paiement{i}')
     headers.append('Reste')
@@ -127,7 +130,7 @@ def export_excel():
         col = 8
         for m in MATIERES:
             for t in TRIMESTRES:
-                ws.write(row, col, s['notes'][m][t])
+                ws.write(row, col, s['notes'][m][t] or '')
                 col += 1
         for p in s['paiements']:
             ws.write(row, col, p['montant'])
@@ -141,9 +144,9 @@ def export_excel():
                      as_attachment=True,
                      download_name=f"eleves_{datetime.now():%Y%m%d_%H%M%S}.xlsx")
 
-# ------------- PAS DE 404/500 PERSONNALISÉ -------------
-# Flask gère automatiquement les erreurs sans chercher 404.html/500.html
+# ------------- PAS DE HANDLERS 404/500 -------------
+# Flask renvoie ses pages d’erreur par défaut si jamais besoin
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=PORT, debug=False)
-        
+                
