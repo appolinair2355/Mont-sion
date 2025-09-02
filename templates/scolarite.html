@@ -1,111 +1,34 @@
 {% extends "base.html" %}
-
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h2><i class="fas fa-money-bill-wave me-2"></i>Gestion complète de la scolarité</h2>
-</div>
-
-{% if not students %}
-<div class="text-center py-5">
-    <i class="fas fa-money-bill-wave fa-5x text-muted mb-3"></i>
-    <h4 class="text-muted">Aucun élève inscrit</h4>
-</div>
-{% else %}
+<h2 class="mb-3">Gestion des paiements</h2>
 <div class="table-responsive">
-    <table class="table table-hover">
-        <thead>
-            <tr>
-                <th>Élève</th>
-                <th>Classe</th>
-                <th>Frais Total</th>
-                <th>Payé</th>
-                <th>Restant</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for eleve in students %}
-            <tr>
-                <td>
-                    <strong>{{ eleve.nom }}</strong> {{ eleve.prenoms }}<br>
-                    <small class="text-muted">{{ eleve.parent }} - {{ eleve.parent_phone }}</small>
-                </td>
-                <td>{{ eleve.classe }}</td>
-                <td>{{ eleve.frais_total }} FCFA</td>
-                <td>{{ eleve.frais_paye }} FCFA</td>
-                <td>
-                    <span class="badge rounded-pill 
-                        {% if eleve.frais_restant > 0 %}bg-danger
-                        {% else %}bg-success{% endif %}">
-                        {{ eleve.frais_restant }} FCFA
-                    </span>
-                </td>
-                <td>
-                    {% if eleve.frais_restant > 0 %}
-                    <button class="btn btn-primary btn-sm" data-bs-toggle="modal" 
-                            data-bs-target="#paymentModal{{ eleve.id }}">
-                        <i class="fas fa-credit-card me-1"></i>Payer
-                    </button>
-                    
-                    <!-- Modal de paiement -->
-                    <div class="modal fade" id="paymentModal{{ eleve.id }}" tabindex="-1">
-                        <div class="modal-dialog">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h5 class="modal-title">Paiement</h5>
-                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                </div>
-                                <form method="POST" action="{{ url_for('pay') }}">
-                                    <div class="modal-body">
-                                        <h6>{{ eleve.nom }} {{ eleve.prenoms }}</h6>
-                                        <p class="text-muted">Classe: {{ eleve.classe }}</p>
-                                        <hr>
-                                        <p>Frais total: <strong>{{ eleve.frais_total }} FCFA</strong></p>
-                                        <p>Frais restants: <strong class="text-danger">{{ eleve.frais_restant }} FCFA</strong></p>
-                                        
-                                        <input type="hidden" name="student_id" value="{{ eleve.id }}">
-                                        
-                                        <div class="mb-3">
-                                            <label class="form-label">Montant à payer</label>
-                                            <input type="number" class="form-control" name="amount" 
-                                                   max="{{ eleve.frais_restant }}" min="1" required>
-                                        </div>
-                                        
-                                        <div class="mb-3">
-                                            <label class="form-label">Mode de paiement</label>
-                                            <select class="form-select" name="mode">
-                                                <option value="Espèce">Espèce</option>
-                                                <option value="Mobile Money">Mobile Money</option>
-                                                <option value="Virement">Virement</option>
-                                            </select>
-                                        </div>
-                                        
-                                        <div class="mb-3">
-                                            <label class="form-label">Mot de passe</label>
-                                            <input type="password" class="form-control" name="password" required>
-                                            <div class="form-text">Mot de passe: kouame</div>
-                                        </div>
-                                    </div>
-                                    <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                                        <button type="submit" class="btn btn-primary">
-                                            <i class="fas fa-check me-2"></i>Confirmer
-                                        </button>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                    {% else %}
-                    <span class="badge bg-success">
-                        <i class="fas fa-check me-1"></i>Payé
-                    </span>
-                    {% endif %}
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+  <table class="table table-hover align-middle">
+    <thead class="table-light">
+      <tr>
+        <th>Élève</th><th>Classe</th><th>Frais Total</th><th>Déjà payé</th><th>Reste</th><th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for s in students %}
+      <tr>
+        <td>{{ s.nom }} {{ s.prenoms }}</td>
+        <td>{{ s.classe }}</td>
+        <td>{{ s.frais_total }} FCFA</td>
+        <td>{{ s.paiements|map(attribute='montant')|sum }} FCFA</td>
+        <td class="fw-bold {% if (s.frais_total - s.paiements|map(attribute='montant')|sum) > 0 %}text-danger{% else %}text-success{% endif %}">
+          {{ s.frais_total - s.paiements|map(attribute='montang')|sum }} FCFA
+        </td>
+        <td>
+          <form method="POST" action="{{ url_for('scolarite') }}" class="d-flex gap-2">
+            <input type="hidden" name="student_id" value="{{ s.id }}">
+            <input type="number" name="amount" min="1" class="form-control form-control-sm" placeholder="Montant" required>
+            <input type="password" name="password" class="form-control form-control-sm" placeholder="MDP" required>
+            <button class="btn btn-sm btn-success"><i class="fas fa-check"></i></button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
 </div>
-{% endif %}
 {% endblock %}
