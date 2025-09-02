@@ -7,6 +7,11 @@
         <h4 class="mb-0">Importer des élèves (Excel)</h4>
       </div>
       <div class="card-body">
+        <p class="small text-muted">
+          Le fichier doit contenir les colonnes :<br>
+          <strong>Nom, Prénoms, Classe, Sexe, DateNaissance, Parent, Téléphone, FraisTotal</strong><br>
+          puis les notes <strong>MathT1, FrançaisT1…</strong> et les paiements <strong>Paiement1, Paiement2…</strong>
+        </p>
         <form method="POST" enctype="multipart/form-data">
           <div class="mb-3">
             <label for="file" class="form-label">Fichier .xlsx</label>
