@@ -228,7 +228,8 @@ def export_excel():
     output.seek(0)
     return send_file(io.BytesIO(output.getvalue()),
                      as_attachment=True,
-                     download_name=f"eleves_complet_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx')
+                     download_name=f"eleves_complet_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=PORT, debug=False)
