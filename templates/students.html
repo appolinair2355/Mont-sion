@@ -30,8 +30,8 @@
               <td>{{ e.parent_phone }}</td>
               {% for m in matieres %}
                 <td>
-                  I1: {{ e.notes[m].Intero1 or '-' }}<br>
-                  I2: {{ e.notes[m].Intero2 or '-' }}
+                  I1: {{ e.notes.get(m, {}).get('Intero1', '-') }}<br>
+                  I2: {{ e.notes.get(m, {}).get('Intero2', '-') }}
                 </td>
               {% endfor %}
               <td>
@@ -52,3 +52,4 @@
   {% endfor %}
 {% endif %}
 {% endblock %}
+ztm
