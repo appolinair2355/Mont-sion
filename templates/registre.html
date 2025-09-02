@@ -1,112 +1,47 @@
 {% extends "base.html" %}
-
 {% block content %}
-<div class="container py-5">
-    <div class="row justify-content-center">
-        <div class="col-lg-8">
-            <div class="card shadow">
-                <div class="card-header bg-primary text-white">
-                    <h4 class="mb-0">Inscription d'un élève</h4>
-                </div>
-                <div class="card-body">
-                    <form method="POST" action="{{ url_for('register') }}">
-                        
-                        <!-- Nom et Prénoms -->
-                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                <label class="form-label">Nom *</label>
-                                <input type="text" name="nom" class="form-control" required>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Prénoms *</label>
-                                <input type="text" name="prenoms" class="form-control" required>
-                            </div>
-                        </div>
-                        
-                        <!-- Sexe et Classe -->
-                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                <label class="form-label">Sexe *</label>
-                                <select name="sexe" class="form-control" required>
-                                    <option value="">Choisir...</option>
-                                    <option value="M">Masculin</option>
-                                    <option value="F">Féminin</option>
-                                </select>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Classe *</label>
-                                <select name="classe" class="form-control" required>
-                                    <option value="">Choisir...</option>
-                                    <option value="CI">CI</option>
-                                    <option value="CP">CP</option>
-                                    <option value="CE1">CE1</option>
-                                    <option value="CE2">CE2</option>
-                                    <option value="CM1">CM1</option>
-                                    <option value="CM2">CM2</option>
-                                    <option value="6ème">6ème</option>
-                                    <option value="5ème">5ème</option>
-                                    <option value="4ème">4ème</option>
-                                    <option value="3ème">3ème</option>
-                                    <option value="2nde">2nde</option>
-                                    <option value="1ère">1ère</option>
-                                    <option value="Tle">Terminale</option>
-                                </select>
-                            </div>
-                        </div>
-                        
-                        <!-- Date et parent -->
-                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                <label class="form-label">Date de naissance *</label>
-                                <input type="date" name="date_naissance" class="form-control" required>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Parent/Tuteur *</label>
-                                <input type="text" name="parent" class="form-control" required>
-                            </div>
-                        </div>
-                        
-                        <!-- Téléphone et frais -->
-                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                <label class="form-label">Téléphone *</label>
-                                <input type="tel" name="parent_phone" class="form-control" required>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Frais total *</label>
-                                <input type="number" name="frais" class="form-control" min="0" required>
-                            </div>
-                        </div>
-                        
-                        <!-- Niveau et utilisateur -->
-                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                <label class="form-label">Niveau *</label>
-                                <select name="niveau" class="form-control" required>
-                                    <option value="">Choisir...</option>
-                                    <option value="primaire">Primaire</option>
-                                    <option value="secondaire">Secondaire</option>
-                                </select>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Utilisateur *</label>
-                                <input type="text" name="utilisateur" class="form-control" required>
-                            </div>
-                        </div>
-                        
-                        <div class="text-center">
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-save me-2"></i>Enregistrer
-                            </button>
-                            <a href="{{ url_for('students') }}" class="btn btn-secondary">
-                                <i class="fas fa-times me-2"></i>Annuler
-                            </a>
-                        </div>
-                    </form>
-                </div>
+<div class="row justify-content-center">
+  <div class="col-lg-8">
+    <div class="card shadow">
+      <div class="card-header bg-primary text-white">
+        <h4 class="mb-0">Inscription d’un élève</h4>
+      </div>
+      <div class="card-body">
+        <form method="POST">
+          <div class="row g-3">
+            <div class="col-md-6"><label class="form-label">Nom *</label><input type="text" name="nom" class="form-control" required></div>
+            <div class="col-md-6"><label class="form-label">Prénoms *</label><input type="text" name="prenoms" class="form-control" required></div>
+            <div class="col-md-6"><label class="form-label">Sexe *</label>
+              <select name="sexe" class="form-select" required>
+                <option value="">Choisir…</option><option>M</option><option>F</option>
+              </select>
             </div>
-        </div>
+            <div class="col-md-6"><label class="form-label">Classe *</label>
+              <select name="classe" class="form-select" required>
+                <option value="">Choisir…</option>
+                <option>CI</option><option>CP</option><option>CE1</option><option>CE2</option>
+                <option>CM1</option><option>CM2</option><option>6ème</option><option>5ème</option>
+                <option>4ème</option><option>3ème</option><option>2nde</option><option>1ère</option><option>Tle</option>
+              </select>
+            </div>
+            <div class="col-md-6"><label class="form-label">Date naissance *</label><input type="date" name="date_naissance" class="form-control" required></div>
+            <div class="col-md-6"><label class="form-label">Parent/Tuteur *</label><input type="text" name="parent" class="form-control" required></div>
+            <div class="col-md-6"><label class="form-label">Téléphone parent *</label><input type="tel" name="parent_phone" class="form-control" required></div>
+            <div class="col-md-6"><label class="form-label">Frais total (FCFA) *</label><input type="number" name="frais" min="0" class="form-control" required></div>
+            <div class="col-md-6"><label class="form-label">Niveau *</label>
+              <select name="niveau" class="form-select" required>
+                <option value="">Choisir…</option><option value="primaire">Primaire</option><option value="secondaire">Secondaire</option>
+              </select>
+            </div>
+            <div class="col-md-6"><label class="form-label">Utilisateur *</label><input type="text" name="utilisateur" class="form-control" required></div>
+          </div>
+          <div class="text-center mt-3">
+            <button class="btn btn-primary"><i class="fas fa-save"></i> Enregistrer</button>
+            <a href="{{ url_for('students') }}" class="btn btn-secondary">Annuler</a>
+          </div>
+        </form>
+      </div>
     </div>
+  </div>
 </div>
 {% endblock %}
-    
