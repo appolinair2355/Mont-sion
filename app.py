@@ -1,9 +1,15 @@
 from flask import Flask, render_template, request, redirect, url_for, send_file, flash
-import yaml, io, xlsxwriter, xlrd2, os, uuid, re
+import yaml
+import io
+import xlsxwriter
+import xlrd2
+import os
+import uuid
+import re
 from datetime import datetime
 
 app = Flask(__name__)
-app.secret_key = os.environ.get('SECRET_KEY', 'ecole-mont-sion-fix')
+app.secret_key = os.environ.get('SECRET_KEY', 'ecole-mont-sion-final')
 PORT = int(os.environ.get('PORT', 10000))
 DATABASE = 'database.yaml'
 
@@ -11,6 +17,7 @@ MATIERES = ['Communication écrite', 'Lecture', 'SVT', 'Anglais',
             'Histoire-Géographie', 'Espagnol', 'Mathématiques']
 TRIMESTRES = ['Intero1', 'Intero2']
 
+# ---------- BASE DE DONNÉES ----------
 def load_data():
     try:
         with open(DATABASE, 'r', encoding='utf-8') as f:
@@ -29,6 +36,7 @@ def save_data(data):
     with open(DATABASE, 'w', encoding='utf-8') as f:
         yaml.dump(data, f, allow_unicode=True, default_flow_style=False)
 
+# ---------- ROUTES ----------
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -163,13 +171,11 @@ def import_excel():
                 'notes': {m: {'Intero1': None, 'Intero2': None} for m in MATIERES},
                 'paiements': []
             }
-            # Notes
             for m in MATIERES:
                 for t in TRIMESTRES:
                     key = f'{m}{t}'
                     val = row[headers.index(key)] if key in headers else None
                     eleve['notes'][m][t] = float(val) if val else None
-            # Paiements
             idx = 1
             while f'Paiement{idx}' in headers:
                 val = row[headers.index(f'Paiement{idx}')]
@@ -189,7 +195,6 @@ def export_excel():
     output = io.BytesIO()
     wb = xlsxwriter.Workbook(output, {'in_memory': True})
     ws = wb.add_worksheet('Élèves')
-
     headers = ['Nom', 'Prénoms', 'Classe', 'Sexe', 'DateNaissance', 'Parent', 'Téléphone', 'FraisTotal']
     for m in MATIERES:
         for t in TRIMESTRES:
@@ -198,10 +203,8 @@ def export_excel():
     for i in range(1, max_p + 1):
         headers.append(f'Paiement{i}')
     headers.append('Reste')
-
     for col, h in enumerate(headers):
         ws.write(0, col, h)
-
     row = 1
     for s in data['primaire'] + data['secondaire']:
         ws.write(row, 0, s['nom'])
@@ -223,13 +226,12 @@ def export_excel():
         reste = s['frais_total'] - sum(p['montant'] for p in s['paiements'])
         ws.write(row, col, reste)
         row += 1
-
     wb.close()
     output.seek(0)
     return send_file(io.BytesIO(output.getvalue()),
                      as_attachment=True,
-                     download_name=f"eleves_complet_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
-
+                     download_name=f"eleves_complet_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx")
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=PORT, debug=False)
+            
