@@ -2,15 +2,16 @@
 {% block content %}
 <h2 class="mb-3">Saisie des notes</h2>
 <form method="POST">
-  <div class="accordion" id="acc">
+  <div class="accordion" id="accordionNotes">
     {% for s in students %}
     <div class="accordion-item">
       <h2 class="accordion-header" id="h{{ s.id }}">
-        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#c{{ s.id }}">
+        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                data-bs-target="#c{{ s.id }}">
           {{ s.nom }} {{ s.prenoms }} - {{ s.classe }}
         </button>
       </h2>
-      <div id="c{{ s.id }}" class="accordion-collapse collapse" data-bs-parent="#acc">
+      <div id="c{{ s.id }}" class="accordion-collapse collapse" data-bs-parent="#accordionNotes">
         <div class="accordion-body">
           <div class="row row-cols-2 row-cols-md-4 g-2">
             {% for m in matieres %}
@@ -31,7 +32,9 @@
     {% endfor %}
   </div>
   <div class="text-center mt-4">
-    <button class="btn btn-primary"><i class="fas fa-save"></i> Enregistrer toutes les notes</button>
+    <button type="submit" class="btn btn-primary">
+      <i class="fas fa-save"></i> Enregistrer toutes les notes
+    </button>
   </div>
 </form>
 {% endblock %}
