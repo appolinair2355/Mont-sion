@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Inscription</h2>
+<form method="POST">
+  <div class="mb-3">
+    <label>Nom *</label>
+    <input type="text" name="nom" class="form-control" required>
+  </div>
+  <div class="mb-3">
+    <label>Prénoms *</label>
+    <input type="text" name="prenoms" class="form-control" required>
+  </div>
+  <div class="mb-3">
+    <label>Classe *</label>
+    <select name="classe" class="form-select" required>
+      <option>CI</option><option>CP</option><option>CE1</option><option>CE2</option>
+      <option>CM1</option><option>CM2</option><option>6ème</option><option>5ème</option>
+      <option>4ème</option><option>3ème</option><option>2nde</option><option>1ère</option><option>Tle</option>
+    </select>
+  </div>
+  <div class="mb-3">
+    <label>Sexe *</label>
+    <select name="sexe" class="form-select" required>
+      <option value="">Choisir…</option><option>M</option><option>F</option>
+    </select>
+  </div>
+  <div class="mb-3">
+    <label>Date naissance *</label>
+    <input type="date" name="date_naissance" class="form-control" required>
+  </div>
+  <div class="mb-3">
+    <label>Parent/Tuteur *</label>
+    <input type="text" name="parent" class="form-control" required>
+  </div>
+  <div class="mb-3">
+    <label>Téléphone *</label>
+    <input type="tel" name="parent_phone" class="form-control" required>
+  </div>
+  <div class="mb-3">
+    <label>Frais total (FCFA) *</label>
+    <input type="number" name="frais" min="0" class="form-control" required>
+  </div>
+  <div class="mb-3">
+    <label>Niveau *</label>
+    <select name="niveau" class="form-select" required>
+      <option value="">Choisir…</option><option value="primaire">Primaire</option><option value="secondaire">Secondaire</option>
+    </select>
+  </div>
+  <div class="mb-3">
+    <label>Utilisateur *</label>
+    <input type="text" name="utilisateur" class="form-control" required>
+  </div>
+  <button class="btn btn-primary"><i class="fas fa-save"></i> Enregistrer</button>
+</form>
+{% endblock %}
+  
