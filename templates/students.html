@@ -15,6 +15,9 @@
           <thead class="table-light">
             <tr>
               <th>Nom & Prénoms</th><th>Sexe</th><th>Parent</th><th>Téléphone</th>
+              {% for m in matieres %}
+                <th>{{ m }} (I1/I2)</th>
+              {% endfor %}
               <th>Actions</th>
             </tr>
           </thead>
@@ -25,6 +28,12 @@
               <td>{{ e.sexe }}</td>
               <td>{{ e.parent }}</td>
               <td>{{ e.parent_phone }}</td>
+              {% for m in matieres %}
+                <td>
+                  I1: {{ e.notes[m].Intero1 or '-' }}<br>
+                  I2: {{ e.notes[m].Intero2 or '-' }}
+                </td>
+              {% endfor %}
               <td>
                 <a href="{{ url_for('edit', sid=e.id) }}" class="btn btn-sm btn-warning">
                   <i class="fas fa-edit"></i>
@@ -43,4 +52,3 @@
   {% endfor %}
 {% endif %}
 {% endblock %}
-                
