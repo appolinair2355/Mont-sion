@@ -1,19 +1,21 @@
 {% extends "base.html" %}
 {% block content %}
 <div class="row justify-content-center">
-  <div class="col-md-6">
+  <div class="col-lg-6">
     <div class="card shadow">
       <div class="card-header bg-success text-white">
-        <h4 class="mb-0">Importer Excel</h4>
+        <h4 class="mb-0">Importer des élèves (Excel)</h4>
       </div>
       <div class="card-body">
         <form method="POST" enctype="multipart/form-data">
           <div class="mb-3">
-            <label for="file" class="form-label">Fichier .xlsx (avec colonnes Nom, Prénoms, Classe...)</label>
+            <label for="file" class="form-label">Fichier .xlsx</label>
             <input type="file" id="file" name="file" class="form-control" accept=".xlsx" required>
           </div>
-          <button class="btn btn-success"><i class="fas fa-upload"></i> Importer</button>
-          <a href="{{ url_for('students') }}" class="btn btn-secondary">Annuler</a>
+          <div class="d-flex justify-content-center gap-2">
+            <button type="submit" class="btn btn-success"><i class="fas fa-upload"></i> Importer</button>
+            <a href="{{ url_for('students') }}" class="btn btn-secondary">Annuler</a>
+          </div>
         </form>
       </div>
     </div>
