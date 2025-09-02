@@ -1,55 +1,22 @@
 {% extends "base.html" %}
-
 {% block content %}
 <div class="row justify-content-center">
-    <div class="col-md-8">
-        <div class="card">
-            <div class="card-header text-center">
-                <h3><i class="fas fa-file-excel me-2"></i>Importer des données complètes</h3>
-            </div>
-            <div class="card-body">
-                
-                <!-- Bouton modèle -->
-                <div class="mb-4 text-center">
-                    <a href="{{ url_for('export_excel') }}" class="btn btn-outline-primary">
-                        <i class="fas fa-download me-2"></i>Télécharger le modèle Excel
-                    </a>
-                </div>
-                
-                <form method="POST" enctype="multipart/form-data">
-                    <div class="mb-4">
-                        <label class="form-label fw-bold">
-                            <i class="fas fa-upload me-2"></i>
-                            Sélectionner votre fichier Excel (.xlsx)
-                        </label>
-                        <input type="file" class="form-control form-control-lg" name="file" 
-                               accept=".xlsx" required>
-                        <div class="form-text">
-                            Compatible avec Excel 2007+ - Structure: Élèves, Notes, Paiements
-                        </div>
-                    </div>
-                    
-                    <div class="alert alert-info">
-                        <h6><i class="fas fa-info-circle me-2"></i>Contenu du fichier :</h6>
-                        <ul class="mb-0">
-                            <li><strong>Feuille "Élèves"</strong> : Informations complètes</li>
-                            <li><strong>Feuille "Notes"</strong> : Notes par matière</li>
-                            <li><strong>Feuille "Paiements"</strong> : Historique des paiements</li>
-                        </ul>
-                    </div>
-                    
-                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                        <button type="submit" class="btn btn-primary btn-lg">
-                            <i class="fas fa-upload me-2"></i>Importer les données
-                        </button>
-                        <a href="{{ url_for('students') }}" class="btn btn-secondary btn-lg">
-                            <i class="fas fa-times me-2"></i>Annuler
-                        </a>
-                    </div>
-                </form>
-            </div>
-        </div>
+  <div class="col-md-6">
+    <div class="card shadow">
+      <div class="card-header bg-success text-white">
+        <h4 class="mb-0">Importer Excel</h4>
+      </div>
+      <div class="card-body">
+        <form method="POST" enctype="multipart/form-data">
+          <div class="mb-3">
+            <label for="file" class="form-label">Fichier .xlsx (avec colonnes Nom, Prénoms, Classe...)</label>
+            <input type="file" id="file" name="file" class="form-control" accept=".xlsx" required>
+          </div>
+          <button class="btn btn-success"><i class="fas fa-upload"></i> Importer</button>
+          <a href="{{ url_for('students') }}" class="btn btn-secondary">Annuler</a>
+        </form>
+      </div>
     </div>
+  </div>
 </div>
 {% endblock %}
-                                  
