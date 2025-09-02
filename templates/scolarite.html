@@ -22,8 +22,7 @@
           <form method="POST" action="{{ url_for('scolarite') }}" class="d-flex gap-1">
             <input type="hidden" name="student_id" value="{{ s.id }}">
             <input type="number" name="amount" min="1" class="form-control form-control-sm" placeholder="FCFA" required>
-            <input type="password" name="password" class="form-control form-control-sm" placeholder="MDP" required>
-            <button class="btn btn-sm btn-success"><i class="fas fa-check"></i></button>
+            <button class="btn btn-sm btn-success">Payer</button>
           </form>
         </td>
       </tr>
