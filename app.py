@@ -13,7 +13,6 @@ MATIERES = ['Mathématiques', 'Français', 'Anglais', 'Histoire', 'Géographie',
             'Sciences', 'SVT', 'Physique', 'Chimie', 'Philosophie']
 TRIMESTRES = ['T1', 'T2', 'T3']
 
-# ---------- BASE DE DONNÉES ----------
 def load_data():
     try:
         with open(DATABASE, 'r', encoding='utf-8') as f:
@@ -30,11 +29,11 @@ def save_data(data):
     with open(DATABASE, 'w', encoding='utf-8') as f:
         yaml.dump(data, f, allow_unicode=True, default_flow_style=False)
 
-# ---------- ROUTES ----------
 @app.route('/')
 def index():
     return render_template('index.html')
 
+# ---------- INSCRIPTION ----------
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
@@ -60,6 +59,7 @@ def register():
         return redirect(url_for('students'))
     return render_template('register.html')
 
+# ---------- LISTE + ACTIONS ----------
 @app.route('/students')
 def students():
     data = load_data()
@@ -68,6 +68,65 @@ def students():
     grouped = {c: [s for s in all_st if s.get('classe') == c] for c in classes}
     return render_template('students.html', grouped=grouped)
 
+@app.route('/edit/<sid>', methods=['GET', 'POST'])
+def edit(sid):
+    data = load_data()
+    student = None
+    for niv in ['primaire', 'secondaire']:
+        student = next((s for s in data[niv] if s['id'] == sid), None)
+        if student: break
+    if not student:
+        flash('Élève introuvable', 'error')
+        return redirect(url_for('students'))
+
+    if request.method == 'POST':
+        student['nom'] = request.form['nom'].strip().upper()
+        student['prenoms'] = request.form['prenoms'].strip().title()
+        student['classe'] = request.form['classe']
+        student['sexe'] = request.form['sexe']
+        student['date_naissance'] = request.form['date_naissance']
+        student['parent'] = request.form['parent'].strip().title()
+        student['parent_phone'] = re.sub(r'\D', '', request.form['parent_phone'])
+        student['frais_total'] = int(request.form['frais_total'])
+        save_data(data)
+        flash('Élève modifié', 'success')
+        return redirect(url_for('students'))
+    return render_template('edit.html', student=student)
+
+@app.route('/delete/<sid>', methods=['POST'])
+def delete(sid):
+    data = load_data()
+    for niv in ['primaire', 'secondaire']:
+        data[niv] = [s for s in data[niv] if s['id'] != sid]
+    save_data(data)
+    flash('Élève supprimé', 'success')
+    return redirect(url_for('students'))
+
+# ---------- SCOLARITÉ ----------
+@app.route('/scolarite', methods=['GET', 'POST'])
+def scolarite():
+    data = load_data()
+    students = data['primaire'] + data['secondaire']
+    if request.method == 'POST':
+        sid = request.form['student_id']
+        amount = int(request.form['amount'])
+        pwd = request.form.get('password')
+        if pwd != 'kouame':
+            flash('Mot de passe incorrect', 'error')
+            return redirect(url_for('scolarite'))
+        for niv in ['primaire', 'secondaire']:
+            for s in data[niv]:
+                if s['id'] == sid:
+                    s['paiements'].append({'date': datetime.now().strftime('%d/%m/%Y'), 'montant': amount, 'mode': 'Espèces'})
+                    save_data(data)
+                    flash('Paiement enregistré', 'success')
+                    return redirect(url_for('scolarite'))
+    for s in students:
+        s['paye'] = sum(p['montant'] for p in s.get('paiements', []))
+        s['reste'] = s['frais_total'] - s['paye']
+    return render_template('scolarite.html', students=students)
+
+# ---------- NOTES ----------
 @app.route('/notes', methods=['GET', 'POST'])
 def notes():
     data = load_data()
@@ -83,25 +142,7 @@ def notes():
         return redirect(url_for('notes'))
     return render_template('notes.html', students=students, matieres=MATIERES, trimestres=TRIMESTRES)
 
-@app.route('/scolarite', methods=['GET', 'POST'])
-def scolarite():
-    data = load_data()
-    students = data['primaire'] + data['secondaire']
-    if request.method == 'POST':
-        sid = request.form['student_id']
-        amount = int(request.form['amount'])
-        if request.form.get('password') != 'kouame':
-            flash('Mot de passe incorrect', 'error')
-            return redirect(url_for('scolarite'))
-        for niv in ['primaire', 'secondaire']:
-            for s in data[niv]:
-                if s['id'] == sid:
-                    s['paiements'].append({'date': datetime.now().strftime('%d/%m/%Y'), 'montant': amount, 'mode': 'Espèces'})
-                    save_data(data)
-                    flash('Paiement enregistré', 'success')
-                    return redirect(url_for('scolarite'))
-    return render_template('scolarite.html', students=students)
-
+# ---------- IMPORT ----------
 @app.route('/import_excel', methods=['GET', 'POST'])
 def import_excel():
     if request.method == 'POST':
@@ -130,14 +171,12 @@ def import_excel():
                 'notes': {m: {t: None for t in TRIMESTRES} for m in MATIERES},
                 'paiements': []
             }
-
             # Notes
             for m in MATIERES:
                 for t in TRIMESTRES:
                     key = f'{m}{t}'
                     val = row[headers.index(key)] if key in headers else None
                     eleve['notes'][m][t] = float(val) if val else None
-
             # Paiements
             idx = 1
             while f'Paiement{idx}' in headers:
@@ -145,23 +184,20 @@ def import_excel():
                 if val:
                     eleve['paiements'].append({'date': '', 'montant': int(val), 'mode': 'Import'})
                 idx += 1
-
             niveau = 'primaire' if eleve['classe'] in {'CI','CP','CE1','CE2','CM1','CM2'} else 'secondaire'
             data.setdefault(niveau, []).append(eleve)
-
         save_data(data)
         flash('Import réussi', 'success')
         return redirect(url_for('students'))
-
     return render_template('import_excel.html')
 
+# ---------- EXPORT ----------
 @app.route('/export_excel')
 def export_excel():
     data = load_data()
     output = io.BytesIO()
     wb = xlsxwriter.Workbook(output, {'in_memory': True})
     ws = wb.add_worksheet('Élèves')
-
     headers = ['Nom', 'Prénoms', 'Classe', 'Sexe', 'DateNaissance', 'Parent', 'Téléphone', 'FraisTotal']
     for m in MATIERES:
         for t in TRIMESTRES:
@@ -170,10 +206,8 @@ def export_excel():
     for i in range(1, max_p + 1):
         headers.append(f'Paiement{i}')
     headers.append('Reste')
-
     for col, h in enumerate(headers):
         ws.write(0, col, h)
-
     row = 1
     for s in data['primaire'] + data['secondaire']:
         ws.write(row, 0, s['nom'])
@@ -195,7 +229,6 @@ def export_excel():
         reste = s['frais_total'] - sum(p['montant'] for p in s['paiements'])
         ws.write(row, col, reste)
         row += 1
-
     wb.close()
     output.seek(0)
     return send_file(io.BytesIO(output.getvalue()),
@@ -205,4 +238,3 @@ def export_excel():
 # ---------- PAS DE 404/500 ----------
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=PORT, debug=False)
-              
