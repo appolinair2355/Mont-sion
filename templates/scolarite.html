@@ -5,7 +5,7 @@
   <table class="table table-hover align-middle">
     <thead class="table-light">
       <tr>
-        <th>Élève</th><th>Classe</th><th>Frais Total</th><th>Déjà payé</th><th>Reste</th><th>Action</th>
+        <th>Élève</th><th>Classe</th><th>Frais Total</th><th>Déjà payé</th><th>Reste</th><th>Payer</th>
       </tr>
     </thead>
     <tbody>
@@ -14,14 +14,14 @@
         <td>{{ s.nom }} {{ s.prenoms }}</td>
         <td>{{ s.classe }}</td>
         <td>{{ s.frais_total }} FCFA</td>
-        <td>{{ s.paiements|map(attribute='montant')|sum }} FCFA</td>
-        <td class="fw-bold {% if (s.frais_total - s.paiements|map(attribute='montant')|sum) > 0 %}text-danger{% else %}text-success{% endif %}">
-          {{ s.frais_total - s.paiements|map(attribute='montant')|sum }} FCFA
+        <td>{{ s.paye }} FCFA</td>
+        <td class="fw-bold {% if s.reste > 0 %}text-danger{% else %}text-success{% endif %}">
+          {{ s.reste }} FCFA
         </td>
         <td>
-          <form method="POST" action="{{ url_for('scolarite') }}" class="d-flex gap-2">
+          <form method="POST" action="{{ url_for('scolarite') }}" class="d-flex gap-1">
             <input type="hidden" name="student_id" value="{{ s.id }}">
-            <input type="number" name="amount" min="1" class="form-control form-control-sm" placeholder="Montant" required>
+            <input type="number" name="amount" min="1" class="form-control form-control-sm" placeholder="FCFA" required>
             <input type="password" name="password" class="form-control form-control-sm" placeholder="MDP" required>
             <button class="btn btn-sm btn-success"><i class="fas fa-check"></i></button>
           </form>
@@ -32,4 +32,3 @@
   </table>
 </div>
 {% endblock %}
-              
