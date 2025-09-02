@@ -3,16 +3,17 @@ import yaml, io, xlsxwriter, xlrd2, os, uuid, re
 from datetime import datetime
 
 app = Flask(__name__)
-app.secret_key = os.environ.get('SECRET_KEY', 'ecole-mont-sion-clean')
+app.secret_key = os.environ.get('SECRET_KEY', 'ecole-mont-sion-final')
 PORT = int(os.environ.get('PORT', 10000))
 DATABASE = 'database.yaml'
 UPLOAD_FOLDER = 'uploads'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 MATIERES = ['Mathématiques', 'Français', 'Anglais', 'Histoire', 'Géographie',
-            'Sciences', 'SVT', 'Physique', 'Chimie']
+            'Sciences', 'SVT', 'Physique', 'Chimie', 'Philosophie']
 TRIMESTRES = ['T1', 'T2', 'T3']
 
+# ---------- BASE DE DONNÉES ----------
 def load_data():
     try:
         with open(DATABASE, 'r', encoding='utf-8') as f:
@@ -29,6 +30,7 @@ def save_data(data):
     with open(DATABASE, 'w', encoding='utf-8') as f:
         yaml.dump(data, f, allow_unicode=True, default_flow_style=False)
 
+# ---------- ROUTES ----------
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -54,7 +56,7 @@ def register():
             'paiements': [], 'date_inscription': datetime.now().strftime('%d/%m/%Y')
         })
         save_data(data)
-        flash('Élève inscrit', 'success')
+        flash('Élève inscrit avec succès', 'success')
         return redirect(url_for('students'))
     return render_template('register.html')
 
@@ -88,8 +90,7 @@ def scolarite():
     if request.method == 'POST':
         sid = request.form['student_id']
         amount = int(request.form['amount'])
-        pwd = request.form.get('password')
-        if pwd != 'kouame':
+        if request.form.get('password') != 'kouame':
             flash('Mot de passe incorrect', 'error')
             return redirect(url_for('scolarite'))
         for niv in ['primaire', 'secondaire']:
@@ -101,12 +102,66 @@ def scolarite():
                     return redirect(url_for('scolarite'))
     return render_template('scolarite.html', students=students)
 
+@app.route('/import_excel', methods=['GET', 'POST'])
+def import_excel():
+    if request.method == 'POST':
+        file = request.files.get('file')
+        if not file or not file.filename.lower().endswith('.xlsx'):
+            flash('Fichier .xlsx requis', 'error')
+            return redirect(url_for('import_excel'))
+
+        wb = xlrd2.open_workbook(file_contents=file.read())
+        ws = wb.sheet_by_index(0)
+        headers = [ws.cell_value(0, col) for col in range(ws.ncols)]
+        data = load_data()
+
+        for r in range(1, ws.nrows):
+            row = ws.row_values(r)
+            eleve = {
+                'id': str(uuid.uuid4()),
+                'nom': str(row[headers.index('Nom')]).upper(),
+                'prenoms': str(row[headers.index('Prénoms')]).title(),
+                'classe': str(row[headers.index('Classe')]),
+                'sexe': str(row[headers.index('Sexe')]).upper(),
+                'date_naissance': str(row[headers.index('DateNaissance')]),
+                'parent': str(row[headers.index('Parent')]).title(),
+                'parent_phone': re.sub(r'\D', '', str(row[headers.index('Téléphone')])),
+                'frais_total': int(row[headers.index('FraisTotal')]),
+                'notes': {m: {t: None for t in TRIMESTRES} for m in MATIERES},
+                'paiements': []
+            }
+
+            # Notes
+            for m in MATIERES:
+                for t in TRIMESTRES:
+                    key = f'{m}{t}'
+                    val = row[headers.index(key)] if key in headers else None
+                    eleve['notes'][m][t] = float(val) if val else None
+
+            # Paiements
+            idx = 1
+            while f'Paiement{idx}' in headers:
+                val = row[headers.index(f'Paiement{idx}')]
+                if val:
+                    eleve['paiements'].append({'date': '', 'montant': int(val), 'mode': 'Import'})
+                idx += 1
+
+            niveau = 'primaire' if eleve['classe'] in {'CI','CP','CE1','CE2','CM1','CM2'} else 'secondaire'
+            data.setdefault(niveau, []).append(eleve)
+
+        save_data(data)
+        flash('Import réussi', 'success')
+        return redirect(url_for('students'))
+
+    return render_template('import_excel.html')
+
 @app.route('/export_excel')
 def export_excel():
     data = load_data()
     output = io.BytesIO()
     wb = xlsxwriter.Workbook(output, {'in_memory': True})
     ws = wb.add_worksheet('Élèves')
+
     headers = ['Nom', 'Prénoms', 'Classe', 'Sexe', 'DateNaissance', 'Parent', 'Téléphone', 'FraisTotal']
     for m in MATIERES:
         for t in TRIMESTRES:
@@ -115,8 +170,10 @@ def export_excel():
     for i in range(1, max_p + 1):
         headers.append(f'Paiement{i}')
     headers.append('Reste')
+
     for col, h in enumerate(headers):
         ws.write(0, col, h)
+
     row = 1
     for s in data['primaire'] + data['secondaire']:
         ws.write(row, 0, s['nom'])
@@ -138,15 +195,14 @@ def export_excel():
         reste = s['frais_total'] - sum(p['montant'] for p in s['paiements'])
         ws.write(row, col, reste)
         row += 1
+
     wb.close()
     output.seek(0)
     return send_file(io.BytesIO(output.getvalue()),
                      as_attachment=True,
-                     download_name=f"eleves_{datetime.now():%Y%m%d_%H%M%S}.xlsx")
+                     download_name=f"eleves_complet_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx")
 
-# ------------- PAS DE HANDLERS 404/500 -------------
-# Flask renvoie ses pages d’erreur par défaut si jamais besoin
-
+# ---------- PAS DE 404/500 ----------
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=PORT, debug=False)
-                
+              
