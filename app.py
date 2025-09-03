@@ -9,15 +9,16 @@ import re
 from datetime import datetime
 
 app = Flask(__name__)
-app.secret_key = os.environ.get('SECRET_KEY', 'ecole-mont-sion-final')
+app.secret_key = os.environ.get('SECRET_KEY', 'ecole-mont-sion-ok')
 PORT = int(os.environ.get('PORT', 10000))
 DATABASE = 'database.yaml'
+UPLOAD_FOLDER = 'uploads'
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 MATIERES = ['Communication écrite', 'Lecture', 'SVT', 'Anglais',
             'Histoire-Géographie', 'Espagnol', 'Mathématiques']
 TRIMESTRES = ['Intero1', 'Intero2']
 
-# ---------- BASE DE DONNÉES ----------
 def load_data():
     try:
         with open(DATABASE, 'r', encoding='utf-8') as f:
@@ -36,7 +37,6 @@ def save_data(data):
     with open(DATABASE, 'w', encoding='utf-8') as f:
         yaml.dump(data, f, allow_unicode=True, default_flow_style=False)
 
-# ---------- ROUTES ----------
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -244,3 +244,4 @@ def export_excel():
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=PORT, debug=False)
+                  
