@@ -45,15 +45,20 @@ def index():
 def register():
     if request.method == 'POST':
         data = load_data()
-        nom = request.form['nom'].strip().upper()
-        prenoms = request.form['prenoms'].strip().title()
-        classe = request.form['classe']
-        sexe = request.form['sexe']
-        date_naissance = request.form['date_naissance']
-        parent = request.form['parent'].strip().title()
-        phone = re.sub(r'\D', '', request.form['parent_phone'])
-        frais = int(request.form['frais'])
-        niveau = request.form['niveau']
+        nom = request.form.get('nom', '').strip().upper()
+        prenoms = request.form.get('prenoms', '').strip().title()
+        classe = request.form.get('classe', '')
+        sexe = request.form.get('sexe', '')
+        date_naissance = request.form.get('date_naissance', '')
+        parent = request.form.get('parent', '').strip().title()
+        phone = re.sub(r'\D', '', request.form.get('parent_phone', ''))
+        frais = int(request.form.get('frais', 0))
+        niveau = request.form.get('niveau', '')
+
+        if not all([nom, prenoms, classe, sexe, date_naissance, parent, phone, frais, niveau]):
+            flash('Tous les champs sont obligatoires', 'error')
+            return render_template('register.html')
+
         data.setdefault(niveau, []).append({
             'id': str(uuid.uuid4()),
             'nom': nom, 'prenoms': prenoms, 'classe': classe, 'sexe': sexe,
@@ -86,14 +91,14 @@ def edit(sid):
         return redirect(url_for('students'))
 
     if request.method == 'POST':
-        student['nom'] = request.form['nom'].strip().upper()
-        student['prenoms'] = request.form['prenoms'].strip().title()
-        student['classe'] = request.form['classe']
-        student['sexe'] = request.form['sexe']
-        student['date_naissance'] = request.form['date_naissance']
-        student['parent'] = request.form['parent'].strip().title()
-        student['parent_phone'] = re.sub(r'\D', '', request.form['parent_phone'])
-        student['frais_total'] = int(request.form['frais_total'])
+        student['nom'] = request.form.get('nom', '').strip().upper()
+        student['prenoms'] = request.form.get('prenoms', '').strip().title()
+        student['classe'] = request.form.get('classe', '')
+        student['sexe'] = request.form.get('sexe', '')
+        student['date_naissance'] = request.form.get('date_naissance', '')
+        student['parent'] = request.form.get('parent', '').strip().title()
+        student['parent_phone'] = re.sub(r'\D', '', request.form.get('parent_phone', ''))
+        student['frais_total'] = int(request.form.get('frais_total', 0))
         save_data(data)
         flash('Élève modifié', 'success')
         return redirect(url_for('students'))
@@ -113,8 +118,11 @@ def scolarite():
     data = load_data()
     students = data['primaire'] + data['secondaire']
     if request.method == 'POST':
-        sid = request.form['student_id']
-        amount = int(request.form['amount'])
+        sid = request.form.get('student_id')
+        amount = int(request.form.get('amount', 0))
+        if not sid or amount <= 0:
+            flash('Montant ou élève invalide', 'error')
+            return redirect(url_for('scolarite'))
         for niv in ['primaire', 'secondaire']:
             for s in data[niv]:
                 if s['id'] == sid:
@@ -228,10 +236,11 @@ def export_excel():
         row += 1
     wb.close()
     output.seek(0)
-    return send_file(io.BytesIO(output.getvalue()),
-                     as_attachment=True,
-                     download_name=f"eleves_complet_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx")
+    return send_file(
+        io.BytesIO(output.getvalue()),
+        as_attachment=True,
+        download_name=f"eleves_complet_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
+    )
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=PORT, debug=False)
-            
